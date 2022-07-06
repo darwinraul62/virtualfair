@@ -1,0 +1,1 @@
+global using Fair.Company.Data.Models;
