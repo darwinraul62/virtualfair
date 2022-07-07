@@ -5,11 +5,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.6"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Fair.Company.Data/Fair.Company.Data.csproj"/>
-    <ProjectReference Include="../Fair.Company.Infrastructure/Fair.Company.Infrastructure.csproj"/>
+    <ProjectReference Include="../Fair.Company.Data/Fair.Company.Data.csproj" />
+    <ProjectReference Include="../Fair.Company.Infrastructure/Fair.Company.Infrastructure.csproj" />
+    <ProjectReference Include="../Fair.Company.Infrastructure.SqlServer/Fair.Company.Infrastructure.SqlServer.csproj" />
   </ItemGroup>
 </Project>
