@@ -28,8 +28,12 @@ public class CompanyController : Microsoft.AspNetCore.Mvc.Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var companies = await this.persistenceService.Company.GetAsync(x => x.CompanyId == id);
-        return Ok(companies);
+        var company = await this.persistenceService.Company.GetFirstOrDefaultAsync(x => x.CompanyId == id);
+
+        if (company == null)
+            return NotFound();
+
+        return Ok(company);
     }    
 
     [HttpPost]
@@ -37,11 +41,15 @@ public class CompanyController : Microsoft.AspNetCore.Mvc.Controller
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     public async Task<IActionResult> Post(CompanyInsertRequestDTO model)
     {        
-        if(this.ModelState.IsValid)
-            return BadRequest();
+        if(!this.ModelState.IsValid)
+            return BadRequest();        
+
+        if(await this.persistenceService.Company.ExistsAsync(p=> p.Identification == model.Identification))
+            return this.Conflict("Company Identification already exists");
 
         Company.Data.Models.Company modelInsert = new Company.Data.Models.Company()
         {
+            CompanyId = Guid.NewGuid(),
             Identification = model.Identification,
             Name = model.Name,
             Active = true
