@@ -17,8 +17,8 @@ public class CompanyControllerTest
 
     public CompanyControllerTest()
     {
-        persistenceService = new Mock<IPersistenceService>();     
-        this.companyController = new CompanyController(persistenceService.Object);     
+        persistenceService = new Mock<IPersistenceService>();
+        this.companyController = new CompanyController(persistenceService.Object);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class CompanyControllerTest
         // Arrange
         this.persistenceService.Setup(x => x.Company.ExistsAsync(p => p.Identification == FakeCompanies.DefaultCompanyIdentification))
             .ReturnsAsync(false);
-        
+
         persistenceService.Setup(x => x.SaveChangesAsync(CancellationToken.None))
             .ReturnsAsync(1);
 
@@ -126,7 +126,7 @@ public class CompanyControllerTest
 
         this.persistenceService.Setup(x => x.Company.ExistsAsync(p => p.Identification == model.Identification))
             .ReturnsAsync(true);
-     
+
         // Act
         var result = await this.companyController.Post(model);
 
@@ -136,5 +136,85 @@ public class CompanyControllerTest
 
         var objectResult = (IStatusCodeActionResult)result;
         Assert.Equal((int)HttpStatusCode.Conflict, objectResult.StatusCode);
+    }    
+
+    [Fact]
+    public async Task Put_Valid_ReturnsNoContent()
+    {
+        // Arrange
+        Guid id = FakeCompanies.DefaultCompanyId;
+        CompanyUpdateRequestDTO model = new CompanyUpdateRequestDTO()
+        {
+            Identification = FakeCompanies.DefaultCompanyIdentification,
+            Name = "Test Company"
+        };
+
+        this.persistenceService.Setup(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null))
+            .ReturnsAsync(FakeCompanies.GetFakeCompanies().FirstOrDefault(p => p.CompanyId == id));
+
+        this.persistenceService.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await this.companyController.Put(id, model);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+        this.persistenceService.Verify(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null), Times.Once);
+        this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);        
+    }
+
+    [Fact]
+    public async Task Put_EmptyModel_ReturnsBadRequest()
+    {
+        // Arrange
+        Guid id = FakeCompanies.DefaultCompanyId;
+        CompanyUpdateRequestDTO model = new CompanyUpdateRequestDTO();
+        this.companyController.ModelState.AddModelError("Identification", "Identification is required");
+        this.companyController.ModelState.AddModelError("Name", "Name is required");
+
+        // Act
+        var result = await this.companyController.Put(id,model);
+
+        // Assert
+        this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);        
+        var objectResult = (IStatusCodeActionResult)result;
+        Assert.Equal((int)HttpStatusCode.BadRequest, objectResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Valid_ReturnsNotContent()
+    {
+        // Arrange
+        Guid id = FakeCompanies.DefaultCompanyId;
+        this.persistenceService.Setup(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null))
+            .ReturnsAsync(FakeCompanies.GetFakeCompanies().FirstOrDefault(p => p.CompanyId == id));
+
+        this.persistenceService.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await this.companyController.Delete(id);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+        this.persistenceService.Verify(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null), Times.Once);
+        this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);  
+    }
+    
+
+    [Fact]
+    public async Task Delete_NotExists_ReturnsNotFound()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        this.persistenceService.Setup(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null))
+            .ReturnsAsync(FakeCompanies.GetFakeCompanies().FirstOrDefault(p => p.CompanyId == id));
+
+        // Act
+        var result = await this.companyController.Delete(id);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
     }
 }

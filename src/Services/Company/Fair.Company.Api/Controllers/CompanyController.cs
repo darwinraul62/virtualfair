@@ -72,7 +72,7 @@ public class CompanyController : Microsoft.AspNetCore.Mvc.Controller
         [BindRequired]Guid id, 
         CompanyUpdateRequestDTO model)
     {        
-        if(this.ModelState.IsValid)
+        if(!this.ModelState.IsValid)
             return BadRequest();
 
         Company.Data.Models.Company? modelUpdate = await this.persistenceService.Company.GetFirstOrDefaultAsync(x => x.CompanyId == id);
