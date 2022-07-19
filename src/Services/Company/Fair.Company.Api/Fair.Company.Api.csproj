@@ -9,12 +9,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.6"/>
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.7"/>
+    <PackageReference Include="AutoMapper" Version="11.0.1"/>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Fair.Company.Data/Fair.Company.Data.csproj" />
-    <ProjectReference Include="../Fair.Company.Infrastructure/Fair.Company.Infrastructure.csproj" />
-    <ProjectReference Include="../Fair.Company.Infrastructure.SqlServer/Fair.Company.Infrastructure.SqlServer.csproj" />
+    <ProjectReference Include="../Fair.Company.Data/Fair.Company.Data.csproj"/>
+    <ProjectReference Include="../Fair.Company.Infrastructure/Fair.Company.Infrastructure.csproj"/>
+    <ProjectReference Include="../Fair.Company.Infrastructure.SqlServer/Fair.Company.Infrastructure.SqlServer.csproj"/>
   </ItemGroup>
 </Project>

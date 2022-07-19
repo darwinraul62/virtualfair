@@ -1,11 +1,14 @@
 using System.Linq.Expressions;
 using System.Net;
+using AutoMapper;
 using Fair.Company.Api;
 using Fair.Company.Api.Models;
 using Fair.Company.Data;
 using Fair.Company.Tests.Infrastruture;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace Fair.Company.Test;
@@ -18,7 +21,10 @@ public class CompanyControllerTest
     public CompanyControllerTest()
     {
         persistenceService = new Mock<IPersistenceService>();
-        this.companyController = new CompanyController(persistenceService.Object);
+        var serviceProvider = FakeServiceProvider.Get();
+        var mapper = (IMapper)serviceProvider.GetRequiredService(typeof(IMapper)); 
+        
+        this.companyController = new CompanyController(persistenceService.Object, mapper);
     }
 
     [Fact]
@@ -180,6 +186,60 @@ public class CompanyControllerTest
         this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);        
         var objectResult = (IStatusCodeActionResult)result;
         Assert.Equal((int)HttpStatusCode.BadRequest, objectResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task Patch_ChangeName_ReturnsNotContent()
+    {
+        // Arrange
+        Guid id = FakeCompanies.DefaultCompanyId;
+        var company = FakeCompanies.GetFakeCompanies().FirstOrDefault(p => p.CompanyId == id);
+
+        this.persistenceService.Setup(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null))
+            .ReturnsAsync(company);
+
+        this.persistenceService.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        JsonPatchDocument<CompanyUpdateRequestDTO> patchDocument = new JsonPatchDocument<CompanyUpdateRequestDTO>();
+        CompanyUpdateRequestDTO model = new CompanyUpdateRequestDTO()
+        {
+            Name = "ABC"            
+        };
+
+        patchDocument.Replace( e => e.Name, model.Name);
+
+        var result = await this.companyController.Patch(id, patchDocument);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+        Assert.Equal(model.Name, company.Name);
+        this.persistenceService.Verify(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null), Times.Once);
+        this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Patch_NotExists_ReturnsNotFound()
+    {
+        // Arrange
+        Guid id = Guid.NewGuid();
+        this.persistenceService.Setup(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null))
+            .ReturnsAsync(FakeCompanies.GetFakeCompanies().FirstOrDefault(p => p.CompanyId == id));
+
+        // Act
+        JsonPatchDocument<CompanyUpdateRequestDTO> patchDocument = new JsonPatchDocument<CompanyUpdateRequestDTO>();
+        CompanyUpdateRequestDTO model = new CompanyUpdateRequestDTO()
+        {
+            Name = "ABC"
+        };
+
+        patchDocument.Replace( e => e.Name, model.Name);
+
+        var result = await this.companyController.Patch(id, patchDocument);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
     }
 
     [Fact]
