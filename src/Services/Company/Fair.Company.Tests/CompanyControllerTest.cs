@@ -214,7 +214,8 @@ public class CompanyControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        Assert.Equal(model.Name, company.Name);
+        Assert.NotNull(company);
+        Assert.Equal(model.Name, company?.Name);
         this.persistenceService.Verify(x => x.Company.GetFirstOrDefaultAsync(p => p.CompanyId == id, null), Times.Once);
         this.persistenceService.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }

@@ -45,7 +45,7 @@ public class CompanyController : Microsoft.AspNetCore.Mvc.Controller
     [ProducesResponseType(typeof(CompanyInsertResponseDTO), (int)HttpStatusCode.Created)]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     public async Task<IActionResult> Post(
-        [FromBody] CompanyInsertRequestDTO model)
+        [FromBody]CompanyInsertRequestDTO model)
     {
         if (!this.ModelState.IsValid)
             return BadRequest();
@@ -53,13 +53,7 @@ public class CompanyController : Microsoft.AspNetCore.Mvc.Controller
         if (await this.persistenceService.Company.ExistsAsync(p => p.Identification == model.Identification))
             return this.Conflict("Company Identification already exists");
 
-        Company.Data.Models.Company modelInsert = new Company.Data.Models.Company()
-        {
-            CompanyId = Guid.NewGuid(),
-            Identification = model.Identification,
-            Name = model.Name,
-            Active = true
-        };
+        Company.Data.Models.Company modelInsert = this.mapper.Map<Company.Data.Models.Company>(model);      
 
         this.persistenceService.Company.Add(modelInsert);
         await persistenceService.SaveChangesAsync();
