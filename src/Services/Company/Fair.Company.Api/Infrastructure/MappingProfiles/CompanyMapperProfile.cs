@@ -10,6 +10,6 @@ public class CompanyMapperProfile : Profile
         CreateMap<Models.CompanyInsertRequestDTO, Company.Data.Models.Company>().BeforeMap((src, dest) =>{
             dest.CompanyId = Guid.NewGuid();
             dest.Active = true;
-        });          
+        });
     }
 }
